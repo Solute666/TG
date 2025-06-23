@@ -1,13 +1,21 @@
-import socket
-from threading import Thread
-from utils import get_filename
+import logging
 from datetime import datetime
+from utils import get_filename
 
 code_memory = {}
 
+
+def cleanup_code_memory():
+    today = datetime.now().strftime("%Y-%m-%d")
+    for date in list(code_memory.keys()):
+        if date != today:
+            del code_memory[date]
+
+
 def handle_client(conn, addr, line):
     filename = get_filename(line)
-    print(f"[{line}] Прием от {addr}, файл: {filename}")
+    logging.info("[%s] Connection from %s, writing to %s", line, addr, filename)
+    cleanup_code_memory()
     with conn, open(filename, "a", encoding="utf-8") as f:
         while True:
             try:
@@ -21,7 +29,7 @@ def handle_client(conn, addr, line):
                     f.flush()
                     code_memory.setdefault(today, set()).add(code)
                 else:
-                    print(f"[{line}] Повтор: {code}")
+                    logging.info("[%s] Duplicate: %s", line, code)
             except Exception as e:
-                print(f"[{line}] Ошибка: {e}")
+                logging.error("[%s] Error: %s", line, e)
                 break

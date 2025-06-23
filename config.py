@@ -1,4 +1,7 @@
-CAMERA_CONFIG = {
+import json
+import os
+
+DEFAULT_CONFIG = {
     "camera1": {
         "ip": "192.168.1.101",
         "port": 9001,
@@ -12,3 +15,14 @@ CAMERA_CONFIG = {
         "controller": "ctrl2"
     },
 }
+
+
+def load_config():
+    path = os.getenv("CAMERA_CONFIG_FILE")
+    if path and os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return DEFAULT_CONFIG
+
+
+CAMERA_CONFIG = load_config()
